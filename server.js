@@ -1,7 +1,7 @@
 var serverApp = require('./app.js');
 var http = require('http');
 var mosca = require('mosca');
-
+var fs = require('fs');
 var port = 8080;
 
 http.createServer(serverApp).listen(port);
@@ -25,17 +25,22 @@ function setup() {
 
 // fired when a message is published
 server.on('published', function (packet, client) {
-	try {
-		 console.log("payload :"+packet.payload.toString('UTF-8'))
-		console.log(packet)
-		var json_source = JSON.parse(packet.payload.toString('UTF-8'));
-		var action = json_source.action;
-		var target = json_source.target;
-	        	
-		if (action === 'addFriend' && target != null) {
-			var name = json_source.name;
-			var profilePicture = json_source.profilePicture;
-			var UUID = json_source.UUID;;
+	try {  
+	//	console.log('packet : '+JSON.stringify(packet))
+		var json_source = JSON.parse(packet.payload.toString('UTF-8'))
+		//var json_source = JSON.parse(packet.payload.toString('UTF-8'));
+		//var action = json_source.action;
+		if (packet.topic === 'postHT'){
+			console.log("json_source : "+JSON.stringify(json_source))
+			var DeviceID = json_source.DeviceID;
+                        var Humidity = json_source.Humidity;
+			var Temperature = json_source.Temperature;
+                        var time = new Date().getTime();
+                        var data = `${time},${Humidity},${Temperature}\n`
+			console.log("data : "+data)
+			fs.appendFile("public/data/"+DeviceID+".txt", data, (err)=>{
+				//console.log(err)
+		})
 			var json_target = JSON.stringify(
 				{
 					action: action,
@@ -45,19 +50,17 @@ server.on('published', function (packet, client) {
 					UUID: UUID
 				}
 			);
-			var message = {
-				topic: target,
-				payload: json_target,
-				qos: 2,
-				retain: true
-			};
-			server.publish(message, function () {
-				console.log("=============redirect==============")
-				console.log('Done!\n', message);
-				console.log("===================================")
-			});
-			const logger = log4js.getLogger();
-			logger.info('addFriend,' + packet.topic + ',' + target);
+			//var message = {
+			//	topic: target,
+			//	payload: json_target,
+			//	qos: 2,
+			//	retain: true
+			//};
+			//server.publish(message, function () {
+			//	console.log("=============redirect==============")
+			//	console.log('Done!\n', message);
+			//	console.log("===================================")
+			//});
 		} 
 	} catch (e) {
 		// console.log(e);

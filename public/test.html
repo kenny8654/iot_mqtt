@@ -1,0 +1,238 @@
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>Highcharts 教程 | 菜鸟教程(runoob.com)</title>
+<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+
+</head>
+<body>
+<div id="containerT" style="width: 550px; height: 400px; margin: 0 auto"></div>
+<div id="containerH" style="width: 550px; height: 400px; margin: 0 auto"></div>
+<script language="JavaScript">
+var totalPoints = 50;
+var updateInterval = 1000;
+var now = new Date().getTime();
+var now2 = new Date().getTime();
+var Humidity = [];
+var Temperature = [];
+var beUsed = false;
+$(document).ready(function(){
+   getTxt()
+   
+})
+function getTxt(){
+    pictures = $.ajax({
+              url: "http://140.116.72.90:8080/getTxt",
+              type: "GET",
+              success: function(txt) {
+                $(document).ready(function(){
+                lines = txt.split("\n")
+                // console.log("lines: "+lines)
+                Humidity = []
+                Temperature = []
+                Humidity.length = 0
+                Temperature.length = 0
+                // console.log("line :" + lines)
+                lines.forEach(function(line) {
+                     line = line.split(",")
+                     Humidity.push([line[0], line[1]])
+                     Temperature.push([line[0], line[2]])
+                 })
+                
+                }
+                );
+                Humidity.pop()
+                Temperature.pop()
+                console.log("Humidity : "+Humidity[Humidity.length-1])
+                console.log("Temperature : "+Temperature[Temperature.length-1])
+                if(!beUsed){
+                  // start(Humidity, Temperature);
+                  start();
+                }
+              },
+              
+              error: function() {
+               //  alert("ERROR!!!");
+              }
+            });
+         }
+// function start(Humidity, Temperature){
+function start(){
+   beUsed = true
+   var chartH = {
+      type: 'spline',
+   animation: Highcharts.svg, // don't animate in IE < IE 10.
+      marginRight: 10,
+   events: {
+         load: function () {
+            // set up the updating of the chart each second
+            var series = this.series[0];
+            setInterval(function () {
+               getTxt()
+               var lastH = Humidity[Humidity.length-1]
+               console.log("lastH")
+               console.log(lastH)
+               var x = +lastH[0], // current time
+               y = +lastH[1];
+               series.addPoint([x, y], true, true);
+
+            }, 1000);
+         }
+      }
+   }; 
+   var chartT = {
+      type: 'spline',
+   animation: Highcharts.svg, // don't animate in IE < IE 10.
+      marginRight: 10,
+   events: {
+         load: function () {
+            // set up the updating of the chart each second
+            var series = this.series[0];
+   // var lineT2 = {
+   //    name: 'T2',
+   //    data: (function () {
+   //       // generate an array of random data
+   //       var data = [],time = (new Date()).getTime(),i;
+   //          for (i = 0; i < Humidity.length-1; i ++) {
+   //             data.push({
+   //                x: +Humidity[i][0],
+   //                y: +Humidity[i][1]+5
+   //             });
+   //          }
+                     
+   //       return data;
+   
+   //    }())    
+   // }
+   //          chartT.addSeries(lineT2)
+   //          console.log(this.series)
+   //          s2 = this.series.series[1]
+            setInterval(function () {
+               var lastT = Temperature[Temperature.length-1]
+               console.log("lastT")
+               console.log(lastT)
+               var x = +lastT[0], // current time
+               y = +lastT[1];
+               series.addPoint([x, y], true, true);
+               // s2.addPoint([x, y+3], true, true);
+
+            }, 1000);
+         }
+      }
+   }; 
+   var xAxis = {
+      type: 'datetime',
+      tickPixelInterval: 150
+   };
+   var yAxis = {
+      title: {
+         text: 'Value'
+      },
+      plotLines: [{
+         value: 0,
+         width: 1,
+         color: '#808080'
+      }]
+   };
+   var tooltip = {
+      formatter: function () {
+      return '<b>' + this.series.name + '</b><br/>' +
+         Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
+         Highcharts.numberFormat(this.y, 2);
+      }
+   };
+   var plotOptions = {
+      area: {
+         pointStart: 1940,
+         marker: {
+            enabled: false,
+            symbol: 'circle',
+            radius: 2,
+            states: {
+               hover: {
+               enabled: true
+               }
+            }
+         }
+      }
+   };
+   var legend = {
+      enabled: false
+   };
+   var exporting = {
+      enabled: false
+   };
+   var lineH = {
+      name: 'Humidity',
+      data: (function () {
+         // generate an array of random data
+         var data = [],time = (new Date()).getTime(),i;
+            for (i = 0; i < Humidity.length-1; i ++) {
+               data.push({
+                  x: +Humidity[i][0],
+                  y: +Humidity[i][1]
+               });
+            }
+                     
+         return data;
+   
+      }())    
+   }
+   var lineT = {
+      name: 'Temperature',
+      data: (function () {
+         // generate an array of random data
+         var data = [],time = (new Date()).getTime(),i;
+            for (i = 0; i < Temperature.length-1; i ++) {
+               data.push({
+                  x: +Temperature[i][0],
+                  y: +Temperature[i][1]
+               });
+            }
+         return data;
+   
+      }())    
+   }
+   // var series= [line, line2];     
+   series =[lineT];
+   var jsonT = {};   
+   jsonT.chart = chartT; 
+   jsonT.title = {
+      text: 'Temperature data'   
+   };     
+   jsonT.tooltip = tooltip;
+   jsonT.xAxis = xAxis;
+   jsonT.yAxis = yAxis; 
+   jsonT.legend = legend;  
+   jsonT.exporting = exporting;   
+   jsonT.series = series;
+   jsonT.plotOptions = plotOptions;
+
+   var jsonH = {};   
+   jsonH.chart = chartH; 
+   jsonH.title = {
+      text: 'Humidity data'   
+   };     
+   jsonH.tooltip = tooltip;
+   jsonH.xAxis = xAxis;
+   jsonH.yAxis = yAxis; 
+   jsonH.legend = legend;  
+   jsonH.exporting = exporting;   
+   jsonH.series = [lineH];
+   jsonH.plotOptions = plotOptions;
+   
+   
+   Highcharts.setOptions({
+      global: {
+         useUTC: false
+      }
+   });
+   $('#containerT').highcharts(jsonT);
+   $('#containerH').highcharts(jsonH);
+   
+}
+</script>
+</body>
+</html>
+
