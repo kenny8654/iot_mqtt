@@ -3,7 +3,8 @@
 <script type="text/javascript" src="http://static.pureexample.com/js/flot/jquery.flot.min.js"></script>
 <script type="text/javascript" src="http://static.pureexample.com/js/flot/jquery.flot.time.js"></script>
 <script type="text/javascript" src="http://static.pureexample.com/js/flot/jquery.flot.axislabels.js"></script>
-
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 <!-- CSS -->
 <style type="text/css">
     #flotcontainer {
@@ -13,7 +14,12 @@
         margin: 0 auto;
         background-color: #FFF;
     }
-
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-right: -15px;
+        margin-left: -100px;
+        }
     #flotcontainer2 {
         width: 600px;
         height: 200px;
@@ -21,14 +27,34 @@
         margin: 0 auto;
         background-color: #FFF;
     }
-
+    #flotcontainerallT {
+        width: 600px;
+        height: 200px;
+        text-align: center;
+        margin: 0 auto;
+        background-color: #FFF;
+    }
+    #flotcontainerallH {
+        width: 600px;
+        height: 200px;
+        text-align: center;
+        margin: 0 auto;
+        background-color: #FFF;
+    }
     h1 {
         text-align: center;
         background-color: #FFF;
     }
-    
+    input {
+        text-align: center;
+        background-color: #FFF;
+    }
+    #team{
+       text-align: center;
+       color: #FFF
+    }
     #TH{
-       text-align: center;        
+       text-align: center;
        color: #FFF;
     }
     body {
@@ -38,14 +64,17 @@
 
 <!-- Javascript -->
 <script>
-    var data = [];
-    data[0] = [];
-    data[1] = [];
+    // var data = [];
+    // data[0] = [];
+    // data[1] = [];
     var dataset;
-    var totalPoints = 50;
+    var totalPoints = 500;
     var updateInterval = 1000;
-    // var Humidity = [];
-    // var Temperature = [];
+    var Humidity = [];
+    var Temperature = [];
+    var Humiditys = {};
+    var Temperatures = {};
+    var myTeamName = "Team1";
 
     function GetData() {
         get = $.ajax({
@@ -54,26 +83,60 @@
             success: function (txt) {
                 $(document).ready(function () {
                     lines = txt.split("\n")
-                    // Humidity = []
-                    // Temperature = []
+                    Humidity = []
+                    Temperature = []
                     // Humidity.length = 0
                     // Temperature.length = 0
-                    data[0] = [];
-                    data[1] = [];
+                    // data[0] = [];
+                    // data[1] = [];
                     lines.forEach(function (line) {
                         line = line.split(",")
-                        // Humidity.push([+line[0], +line[1]]);
-                        // Temperature.push([+line[0], +line[2]]);
-                        data[0].push([+line[0], +line[1]]);
-                        data[1].push([+line[0], +line[2]]);
+                        Humidity.push([+line[0], +line[1]]);
+                        Temperature.push([+line[0], +line[2]]);
+                        // data[0].push([+line[0], +line[1]]);
+                        // data[1].push([+line[0], +line[2]]);
                     })
 
                 }
                 );
-                // Humidity.pop();
-                // Temperature.pop();
-                data[0].pop();
-                data[1].pop();
+                Humidity.pop();
+                Temperature.pop();
+                // data[0].pop();
+                // data[1].pop();
+                //console.log(data[0]);
+                //console.log(data[1]);
+            },
+            error: function () {
+                alert("ERROR!!!");
+            }
+        });
+    }
+    function GetDatas() {
+        get = $.ajax({
+            url: "http://140.116.72.90:8080/getTeamsdata",
+            type: "GET",
+            success: function (txt) {
+                $(document).ready(function () {
+                    TeamsData = JSON.parse(txt)
+                    for(var TeamName in TeamsData){
+                        // console.log("TeamName:"+TeamName)
+                        TeamData = JSON.parse(TeamsData[TeamName])
+                        // console.log("TeamData:"+TeamData)
+                        Humidity = []
+                        Temperature = []
+                        TeamData.forEach((line)=>{
+                            Humidity.push([+line[0], +line[1]]);
+                            Temperature.push([+line[0], +line[2]]);
+                        })
+                        Humidity.pop();
+                        Temperature.pop();
+                        Humiditys[TeamName] = Humidity;
+                        Temperatures[TeamName] = Temperature;
+                    }
+                }
+                );
+                // data[0].pop();
+                // data[1].pop();
                 //console.log(data[0]);
                 //console.log(data[1]);
             },
@@ -93,11 +156,11 @@
         },
         xaxis: {
             mode: "time",
-            tickSize: [2, "second"],
+            tickSize: [20, "second"],
             tickFormatter: function (v, axis) {
                 var date = new Date(v);
 
-                if (date.getSeconds() % 20 == 0) {
+                if (date.getSeconds() % 60 == 0 && date.getMinutes() % 2 == 0) {
                     var hours = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
                     var minutes = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
                     var seconds = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
@@ -119,12 +182,12 @@
             tickSize: 5,
             tickFormatter: function (v, axis) {
                 if (v % 10 == 0) {
-                    return v + "%('C)";
+                    return v + "'C";
                 } else {
                     return "";
                 }
             },
-            axisLabel: "T/H",
+            axisLabel: "Temperature",
             axisLabelUseCanvas: true,
             axisLabelFontSizePixels: 12,
             axisLabelFontFamily: 'Verdana, Arial',
@@ -135,30 +198,216 @@
         }
     };
 
-    $(document).ready(function () {
-        GetData();
-        console.log(data[0]);
-        dataset = [
-            { label: "Humidity", data: data[0] },
-            { label: "Temperature", data: data[1] }
-        ];
+    var optionsallT = {
+        series: {
+            lines: {
+                show: true,
+                lineWidth: 1.2,
+                fill: true
+            }
+        },
+        xaxis: {
+            mode: "time",
+            tickSize: [20, "second"],
+            tickFormatter: function (v, axis) {
+                var date = new Date(v);
 
+                if (date.getSeconds() % 60 == 0 && date.getMinutes() % 2 == 0) {
+                    var hours = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
+                    var minutes = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
+                    var seconds = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
+
+                    return hours + ":" + minutes + ":" + seconds;
+                } else {
+                    return "";
+                }
+            },
+            axisLabel: "Time",
+            axisLabelUseCanvas: true,
+            axisLabelFontSizePixels: 12,
+            axisLabelFontFamily: 'Verdana, Arial',
+            axisLabelPadding: 10
+        },
+        yaxis: {
+            min: 0,
+            max: 100,
+            tickSize: 5,
+            tickFormatter: function (v, axis) {
+                if (v % 10 == 0) {
+                    return v + "%";
+                } else {
+                    return "";
+                }
+            },
+            axisLabel: "Temperature",
+            axisLabelUseCanvas: true,
+            axisLabelFontSizePixels: 12,
+            axisLabelFontFamily: 'Verdana, Arial',
+            axisLabelPadding: 6
+        },
+        legend: {
+            labelBoxBorderColor: "#fff"
+        }
+    };
+
+    var options2 = {
+        series: {
+            lines: {
+                show: true,
+                lineWidth: 1.2,
+                fill: true
+            }
+        },
+        xaxis: {
+            mode: "time",
+            tickSize: [20, "second"],
+            tickFormatter: function (v, axis) {
+                var date = new Date(v);
+
+                if (date.getSeconds() % 60 == 0 && date.getMinutes() % 2 == 0) {
+                    var hours = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
+                    var minutes = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
+                    var seconds = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
+
+                    return hours + ":" + minutes + ":" + seconds;
+                } else {
+                    return "";
+                }
+            },
+            axisLabel: "Time",
+            axisLabelUseCanvas: true,
+            axisLabelFontSizePixels: 12,
+            axisLabelFontFamily: 'Verdana, Arial',
+            axisLabelPadding: 10
+        },
+        yaxis: {
+            min: 0,
+            max: 100,
+            tickSize: 5,
+            tickFormatter: function (v, axis) {
+                if (v % 10 == 0) {
+                    return v + "'C";
+                } else {
+                    return "";
+                }
+            },
+            axisLabel: "Humidity",
+            axisLabelUseCanvas: true,
+            axisLabelFontSizePixels: 12,
+            axisLabelFontFamily: 'Verdana, Arial',
+            axisLabelPadding: 6
+        },
+        legend: {
+            labelBoxBorderColor: "#fff"
+        }
+    };
+    var optionsallH = {
+        series: {
+            lines: {
+                show: true,
+                lineWidth: 1.2,
+                fill: true
+            }
+        },
+        xaxis: {
+            mode: "time",
+            tickSize: [20, "second"],
+            tickFormatter: function (v, axis) {
+                var date = new Date(v);
+
+                if (date.getSeconds() % 60 == 0 && date.getMinutes() % 2 == 0) {
+                    var hours = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
+                    var minutes = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
+                    var seconds = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
+
+                    return hours + ":" + minutes + ":" + seconds;
+                } else {
+                    return "";
+                }
+            },
+            axisLabel: "Time",
+            axisLabelUseCanvas: true,
+            axisLabelFontSizePixels: 12,
+            axisLabelFontFamily: 'Verdana, Arial',
+            axisLabelPadding: 10
+        },
+        yaxis: {
+            min: 0,
+            max: 100,
+            tickSize: 5,
+            tickFormatter: function (v, axis) {
+                if (v % 10 == 0) {
+                    return v + "'C";
+                } else {
+                    return "";
+                }
+            },
+            axisLabel: "Humidity",
+            axisLabelUseCanvas: true,
+            axisLabelFontSizePixels: 12,
+            axisLabelFontFamily: 'Verdana, Arial',
+            axisLabelPadding: 10
+        },
+        legend: {
+            labelBoxBorderColor: "#fff"
+        }
+    };
+
+    $(document).ready(function () {
+        myTeamName = document.getElementById("TeamName").value;
+        GetDatas();
+        dataset = [
+            { label: "Temperature", data: Temperatures[myTeamName] }
+        ];
+        dataset2 = [
+            {label : "Humidity", data:Humiditys[myTeamName]}
+        ];
+        datasetallT = []
+        datasetallH = []
+        try{
+            for(TeamName of Temperatures){
+                datasetallT.push({label : TeamName, data:Temperatures[TeamName]})
+                    datasetallH.push({label : TeamName, data:Humiditys[TeamName]})
+            }
+        }catch(e){
+            console.log(e)
+        }
         $.plot($("#flotcontainer"), dataset, options);
-        $.plot($("#flotcontainer2"), dataset, options);
+        $.plot($("#flotcontainer2"), dataset2, options);
+        $.plot($("#flotcontainerallT"), datasetallT, optionsallT);
+        $.plot($("#flotcontainerallH"), datasetallH, optionsallH);
 
         function update() {
-            GetData();
-            console.log(data[0]);
-            dataset = [           
-                { label: "Humidity", data: data[0] },           
-                { label: "Temperature", data: data[1]}       
+            myTeamName = document.getElementById("TeamName").value;
+            GetDatas();
+            // console.log(Humidity);
+            dataset = [
+                { label: "Temperature", data: Temperatures[myTeamName]}
             ];
-            var t = String(data[1][49]).split(',');
-            var h = String(data[0][49]).split(',');
-            console.log(typeof(h));               
-            document.getElementById("TH").innerHTML = "目前溫度  " + t[1] + " 度C , 濕度  " + h[1] + "%"
+            dataset2 = [
+                {label : "Humidity", data:Humiditys[myTeamName]}
+            ];
+            datasetallT = []
+            datasetallH = []
+            try{
+                for(TeamName in Temperatures){
+                    datasetallT.push({label : TeamName, data:Temperatures[TeamName]})
+                    datasetallH.push({label : TeamName, data:Humiditys[TeamName]})
+                }
+            }catch(e){
+                console.log(e)
+            }
+
+            try{
+                var t = String(Temperatures[myTeamName][498][1]);
+                var h = String(Humiditys[myTeamName][498][1]);
+               // console.log(typeof(h));
+               document.getElementById("TH").innerHTML = "目前溫度  " + t + " 度C , 濕度  " + h + "%"
+            }catch(e){console.log(e);}
             $.plot($("#flotcontainer"), dataset, options)
-            $.plot($("#flotcontainer2"), dataset, options)
+            $.plot($("#flotcontainer2"), dataset2, options2)
+            $.plot($("#flotcontainerallT"), datasetallT, optionsallT)
+            $.plot($("#flotcontainerallH"), datasetallH, optionsallH)
             setTimeout(update, updateInterval);
         }
 
@@ -172,6 +421,22 @@
 <!-- HTML -->
 
 <h1>MCSLAB</h1>
+<h2 id="team">組名：
+<input type="text" id="TeamName" value="Team2"><br>
+</h2>
 <h2 id="TH">目前溫度 濕度 </h2>
-<div id="flotcontainer"></div>
-<div id="flotcontainer2"></div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-5">
+                <div id="flotcontainer"></div>
+                <div id="flotcontainer2"></div>
+        </div>
+        <div class="col-md-2">
+        </div>
+        <div class="col-md-4">
+            <div id="flotcontainerallT"></div>
+            <div id="flotcontainerallH"></div>
+        </div>
+    </div>
+</div>
+</div>

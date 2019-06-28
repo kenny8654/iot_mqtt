@@ -76,7 +76,6 @@ function start(){
                var x = +lastH[0], // current time
                y = +lastH[1];
                series.addPoint([x, y], true, true);
-
             }, 1000);
          }
       }
@@ -89,25 +88,6 @@ function start(){
          load: function () {
             // set up the updating of the chart each second
             var series = this.series[0];
-   // var lineT2 = {
-   //    name: 'T2',
-   //    data: (function () {
-   //       // generate an array of random data
-   //       var data = [],time = (new Date()).getTime(),i;
-   //          for (i = 0; i < Humidity.length-1; i ++) {
-   //             data.push({
-   //                x: +Humidity[i][0],
-   //                y: +Humidity[i][1]+5
-   //             });
-   //          }
-                     
-   //       return data;
-   
-   //    }())    
-   // }
-   //          chartT.addSeries(lineT2)
-   //          console.log(this.series)
-   //          s2 = this.series.series[1]
             setInterval(function () {
                var lastT = Temperature[Temperature.length-1]
                console.log("lastT")
@@ -116,7 +96,6 @@ function start(){
                y = +lastT[1];
                series.addPoint([x, y], true, true);
                // s2.addPoint([x, y+3], true, true);
-
             }, 1000);
          }
       }
@@ -208,7 +187,6 @@ function start(){
    jsonT.exporting = exporting;   
    jsonT.series = series;
    jsonT.plotOptions = plotOptions;
-
    var jsonH = {};   
    jsonH.chart = chartH; 
    jsonH.title = {
@@ -235,4 +213,3 @@ function start(){
 </script>
 </body>
 </html>
-
