@@ -14,12 +14,14 @@
         margin: 0 auto;
         background-color: #FFF;
     }
+
     .row {
         display: flex;
         flex-wrap: wrap;
         margin-right: -15px;
         margin-left: -100px;
-        }
+    }
+
     #flotcontainer2 {
         width: 600px;
         height: 200px;
@@ -27,6 +29,7 @@
         margin: 0 auto;
         background-color: #FFF;
     }
+
     #flotcontainerallT {
         width: 600px;
         height: 200px;
@@ -34,6 +37,7 @@
         margin: 0 auto;
         background-color: #FFF;
     }
+
     #flotcontainerallH {
         width: 600px;
         height: 200px;
@@ -41,22 +45,31 @@
         margin: 0 auto;
         background-color: #FFF;
     }
+
     h1 {
         text-align: center;
         background-color: #FFF;
     }
+
+    h3{
+        color: #FFF;
+    }
+
     input {
         text-align: center;
-        background-color: #FFF;
+        background-color: #000;
     }
-    #team{
-       text-align: center;
-       color: #FFF
+
+    #team {
+        text-align: center;
+        color: #FFF
     }
-    #TH{
-       text-align: center;
-       color: #FFF;
+
+    #TH {
+        text-align: center;
+        color: #FFF;
     }
+
     body {
         background-image: url(./bg.png);
     }
@@ -64,9 +77,6 @@
 
 <!-- Javascript -->
 <script>
-    // var data = [];
-    // data[0] = [];
-    // data[1] = [];
     var dataset;
     var totalPoints = 500;
     var updateInterval = 1000;
@@ -76,41 +86,6 @@
     var Temperatures = {};
     var myTeamName = "Team1";
 
-    function GetData() {
-        get = $.ajax({
-            url: "http://140.116.72.90:8080/getTxt",
-            type: "GET",
-            success: function (txt) {
-                $(document).ready(function () {
-                    lines = txt.split("\n")
-                    Humidity = []
-                    Temperature = []
-                    // Humidity.length = 0
-                    // Temperature.length = 0
-                    // data[0] = [];
-                    // data[1] = [];
-                    lines.forEach(function (line) {
-                        line = line.split(",")
-                        Humidity.push([+line[0], +line[1]]);
-                        Temperature.push([+line[0], +line[2]]);
-                        // data[0].push([+line[0], +line[1]]);
-                        // data[1].push([+line[0], +line[2]]);
-                    })
-
-                }
-                );
-                Humidity.pop();
-                Temperature.pop();
-                // data[0].pop();
-                // data[1].pop();
-                //console.log(data[0]);
-                //console.log(data[1]);
-            },
-            error: function () {
-                alert("ERROR!!!");
-            }
-        });
-    }
     function GetDatas() {
         get = $.ajax({
             url: "http://140.116.72.90:8080/getTeamsdata",
@@ -118,15 +93,20 @@
             success: function (txt) {
                 $(document).ready(function () {
                     TeamsData = JSON.parse(txt)
-                    for(var TeamName in TeamsData){
+                    for (var TeamName in TeamsData) {
                         // console.log("TeamName:"+TeamName)
                         TeamData = JSON.parse(TeamsData[TeamName])
                         // console.log("TeamData:"+TeamData)
                         Humidity = []
                         Temperature = []
-                        TeamData.forEach((line)=>{
-                            Humidity.push([+line[0], +line[1]]);
-                            Temperature.push([+line[0], +line[2]]);
+                        TeamData.forEach((line) => {
+			    if(+line[0]< Date.now()-780000){
+			     // Humidity.push([+line[0], 0]);
+		             // Temperature.push([+line[0], 0]);
+			    }else{
+                              Humidity.push([+line[0], +line[1]]);
+                              Temperature.push([+line[0], +line[2]]);
+			    }
                         })
                         Humidity.pop();
                         Temperature.pop();
@@ -135,13 +115,9 @@
                     }
                 }
                 );
-                // data[0].pop();
-                // data[1].pop();
-                //console.log(data[0]);
-                //console.log(data[1]);
             },
             error: function () {
-                alert("ERROR!!!");
+              //  alert("ERROR!!!");
             }
         });
     }
@@ -178,7 +154,7 @@
         },
         yaxis: {
             min: 0,
-            max: 100,
+            max: 50,
             tickSize: 5,
             tickFormatter: function (v, axis) {
                 if (v % 10 == 0) {
@@ -202,8 +178,8 @@
         series: {
             lines: {
                 show: true,
-                lineWidth: 1.2,
-                fill: true
+              //  lineWidth: 1.2,
+             //   fill: true
             }
         },
         xaxis: {
@@ -230,11 +206,11 @@
         },
         yaxis: {
             min: 0,
-            max: 100,
+            max: 50,
             tickSize: 5,
             tickFormatter: function (v, axis) {
                 if (v % 10 == 0) {
-                    return v + "%";
+                    return v + "'C";
                 } else {
                     return "";
                 }
@@ -286,7 +262,7 @@
             tickSize: 5,
             tickFormatter: function (v, axis) {
                 if (v % 10 == 0) {
-                    return v + "'C";
+                    return v + "%";
                 } else {
                     return "";
                 }
@@ -305,8 +281,9 @@
         series: {
             lines: {
                 show: true,
-                lineWidth: 1.2,
-                fill: true
+                //lineWidth: 1.2,
+                //fill: true,
+                
             }
         },
         xaxis: {
@@ -337,7 +314,7 @@
             tickSize: 5,
             tickFormatter: function (v, axis) {
                 if (v % 10 == 0) {
-                    return v + "'C";
+                    return v + "'%";
                 } else {
                     return "";
                 }
@@ -355,55 +332,58 @@
 
     $(document).ready(function () {
         myTeamName = document.getElementById("TeamName").value;
+        document.getElementById("display_teamName").innerHTML = myTeamName;
         GetDatas();
         dataset = [
             { label: "Temperature", data: Temperatures[myTeamName] }
         ];
         dataset2 = [
-            {label : "Humidity", data:Humiditys[myTeamName]}
+            { label: "Humidity", data: Humiditys[myTeamName] }
         ];
         datasetallT = []
         datasetallH = []
-        try{
-            for(TeamName of Temperatures){
-                datasetallT.push({label : TeamName, data:Temperatures[TeamName]})
-                    datasetallH.push({label : TeamName, data:Humiditys[TeamName]})
+        try {
+            for (TeamName of Temperatures) {
+                datasetallT.push({ label: TeamName, data: Temperatures[TeamName] })
+                datasetallH.push({ label: TeamName, data: Humiditys[TeamName] })
             }
-        }catch(e){
+        } catch (e) {
             console.log(e)
         }
         $.plot($("#flotcontainer"), dataset, options);
-        $.plot($("#flotcontainer2"), dataset2, options);
+        $.plot($("#flotcontainer2"), dataset2, options2);
         $.plot($("#flotcontainerallT"), datasetallT, optionsallT);
         $.plot($("#flotcontainerallH"), datasetallH, optionsallH);
 
         function update() {
             myTeamName = document.getElementById("TeamName").value;
+            document.getElementById("display_teamName").innerHTML = myTeamName;
             GetDatas();
             // console.log(Humidity);
             dataset = [
-                { label: "Temperature", data: Temperatures[myTeamName]}
+                { label: "Temperature", data: Temperatures[myTeamName] }
             ];
             dataset2 = [
-                {label : "Humidity", data:Humiditys[myTeamName]}
+       { label: "Humidity", data: Humiditys[myTeamName] }
             ];
             datasetallT = []
             datasetallH = []
-            try{
-                for(TeamName in Temperatures){
-                    datasetallT.push({label : TeamName, data:Temperatures[TeamName]})
-                    datasetallH.push({label : TeamName, data:Humiditys[TeamName]})
+            try {
+                for (TeamName in Temperatures) {
+                    datasetallT.push({ label: TeamName, data: Temperatures[TeamName] })
+                    datasetallH.push({ label: TeamName, data: Humiditys[TeamName] })
                 }
-            }catch(e){
+            } catch (e) {
                 console.log(e)
             }
 
-            try{
-                var t = String(Temperatures[myTeamName][498][1]);
-                var h = String(Humiditys[myTeamName][498][1]);
-               // console.log(typeof(h));
-               document.getElementById("TH").innerHTML = "目前溫度  " + t + " 度C , 濕度  " + h + "%"
-            }catch(e){console.log(e);}
+            try {
+                length = Humiditys[myTeamName].length
+                var t = String(Temperatures[myTeamName][length - 1][1]);
+                var h = String(Humiditys[myTeamName][length - 1][1]);
+                // console.log(typeof(h));
+                document.getElementById("TH").innerHTML = "目前溫度  " + t + " 度C , 濕度  " + h + "%"
+            } catch (e) { console.log(e); }
             $.plot($("#flotcontainer"), dataset, options)
             $.plot($("#flotcontainer2"), dataset2, options2)
             $.plot($("#flotcontainerallT"), datasetallT, optionsallT)
@@ -422,18 +402,20 @@
 
 <h1>MCSLAB</h1>
 <h2 id="team">組名：
-<input type="text" id="TeamName" value="Team2"><br>
+    <input type="text" id="TeamName" value="Team2"><br>
 </h2>
 <h2 id="TH">目前溫度 濕度 </h2>
 <div class="container">
     <div class="row">
         <div class="col-md-5">
-                <div id="flotcontainer"></div>
-                <div id="flotcontainer2"></div>
+            <h3 id="display_teamName">Team</h3>
+            <div id="flotcontainer"></div>
+            <div id="flotcontainer2"></div>
         </div>
         <div class="col-md-2">
         </div>
         <div class="col-md-4">
+            <h3>Each team</h3>
             <div id="flotcontainerallT"></div>
             <div id="flotcontainerallH"></div>
         </div>

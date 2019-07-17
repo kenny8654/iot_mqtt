@@ -77,7 +77,6 @@ app.get('/getTeamsdata',function(req,res){
                 }
                 await TeamsData.push("["+r+"]")
                 await checkReadAllFile();
-            // });
         }
     });
 });

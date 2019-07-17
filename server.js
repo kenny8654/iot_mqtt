@@ -30,20 +30,21 @@ server.on('published', function (packet, client) {
 		var json_source = JSON.parse(packet.payload.toString('UTF-8'))
 		//var json_source = JSON.parse(packet.payload.toString('UTF-8'));
 		//console.log(packet.topic)
-		if (packet.topic === 'postHT'){
+		if (packet.topic.match(/postHT\/Team[0-9]*/g)){
 			console.log("json_source : "+JSON.stringify(json_source))
 			var DeviceID = json_source.DeviceID;
                         var Humidity = json_source.Humidity;
 			var Temperature = json_source.Temperature;
                         var time = new Date().getTime();
                         var data = `${time},${Humidity},${Temperature}\n`
-			console.log("data : "+data)
+			//console.log("data : "+data)
 			checkTeamexist(DeviceID)
 			fs.appendFile("public/data/"+DeviceID+".txt", data, (err)=>{
 				//console.log(err)
 		})
+			if(DeviceID =="Team1"){
 			var data2 = `${time},${Humidity+5},${Temperature+6}\n`
-			fs.appendFile("public/data/"+"Team2"+".txt", data2, (err)=>{})
+			fs.appendFile("public/data/"+"Team2"+".txt", data2, (err)=>{})}
 		}if (packet.topic === 'sonar'){
 		        console.log("sonar_json_source : "+JSON.stringify(json_source))
 			var dist1 = json_source.dist1;
@@ -82,7 +83,7 @@ server.on('clientDisconnected', function (client) {
 function checkTeamexist(TeamName){
     fs.readFile("public/data/Teams.txt", (err, data)=>{
             data = JSON.parse(data)
-	    console.log(data)
+	    //console.log(data)
             isExist = data.includes(TeamName)
 	    if(!isExist){
               data.push(TeamName)
